@@ -1,4 +1,5 @@
 package main.libraybackend.controllers;
+import main.libraybackend.configuration.KeycloakUserManager;
 import main.libraybackend.interfaces.IUserService;
 import main.libraybackend.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +11,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+    private final IUserService userService;
+    private final KeycloakUserManager keycloakUserManager;
 
-    @Autowired
-    private IUserService userService;
+    public UserController(KeycloakUserManager keycloakUserManager, IUserService userService) {
+        this.keycloakUserManager = keycloakUserManager;
+        this.userService = userService;
+    }
+
 
     // Get all users
     @GetMapping
@@ -40,8 +46,13 @@ public class UserController {
     // Add a new user
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        User savedUser = userService.saveUser(user);
-        return ResponseEntity.ok(savedUser);
+        try {
+            User savedUser = userService.saveUser(user);
+            keycloakUserManager.createUser(user.getName(), user.getEmail(), user.getPassword());
+            return ResponseEntity.ok(savedUser);
+        } catch (Exception e) {
+            return (ResponseEntity<User>) ResponseEntity.badRequest();
+        }
     }
 
     // Update a user

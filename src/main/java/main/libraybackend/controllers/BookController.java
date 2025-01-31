@@ -2,7 +2,6 @@ package main.libraybackend.controllers;
 
 import main.libraybackend.interfaces.IBookService;
 import main.libraybackend.models.Book;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +11,11 @@ import java.util.List;
 @RequestMapping("/api/books")
 public class BookController {
 
-    @Autowired
-    private IBookService bookService;
+    private final IBookService bookService;
+
+    public BookController(IBookService bookService) {
+        this.bookService = bookService;
+    }
 
     // Get all books
     @GetMapping
